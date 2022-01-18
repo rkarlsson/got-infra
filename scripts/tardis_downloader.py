@@ -145,7 +145,8 @@ if __name__ == '__main__':
                             date1 = dates[i+1]
 
                             # This will be the final generated output file
-                            output_filename = date[:10] + "_" + pair_code + "_" + str(sym.instrument_id) + ".bin"
+                            
+                            output_filename = date[:10] + "_" + pair_code.replace("/","-") + "_" + str(sym.instrument_id) + ".bin"
                             local_output_path = local_base_path + refdb_exchange_name + "/" + date[:10]
                             total_out_filename = local_output_path + "/" + output_filename
 
