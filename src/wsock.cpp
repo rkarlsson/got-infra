@@ -400,7 +400,13 @@ int WSock::read() {
     int read_length = 0;
 
     while(read_length <= 0){
-        epoll_wait(epoll_id, EVENTS, MAX_EVENTS, -1);
+        int num_events = 0;
+        // num_events = epoll_wait(epoll_id, EVENTS, MAX_EVENTS, -1);
+        do
+        {
+            num_events = epoll_wait(epoll_id, EVENTS, MAX_EVENTS, 0);
+        } while (num_events == 0);
+
         if (EVENTS[0].events & EPOLLIN) {
             current_fd_info = (struct fd_info *) EVENTS[0].data.ptr;
             current_socket = current_fd_info->fd;
