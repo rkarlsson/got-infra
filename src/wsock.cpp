@@ -323,7 +323,11 @@ void WSock::process_subscription_requests() {
                     subscription_logger->msg(INFO, event_msg);
                     fds_to_remove.push_back(it.second);
                     std::string connection_string(it.second->connection_string);
-                    add_subscription_request(connection_string, it.second->file_writer, std::string(it.second->instrument_name), it.second->instrument_id, it.second->exchange_id, it.second);
+                    add_subscription_request(   connection_string, 
+                                                it.second->file_writer, 
+                                                std::string(it.second->instrument_name), 
+                                                it.second->instrument_id, 
+                                                it.second->exchange_id, it.second);
                 } 
 
                 if(it.second->delete_me) {
@@ -361,7 +365,7 @@ void WSock::process_subscription_requests() {
                 // Process the subscription request
 
                 subscription_logger->msg(INFO, "Subscribing to: " + sub_info->websocket_URI);
-                auto fd_info = connect_to_websocket(sub_info->websocket_URI, sub_info->_file_writer,  sub_info->instrument_id, sub_info->exchange_id);
+                auto fd_info = connect_to_websocket(sub_info->websocket_URI, sub_info->_file_writer, sub_info->instrument_id, sub_info->exchange_id);
                 fd_info->pl_book = new MergedOrderbook();
                 if(sub_info->shared_sym_det != nullptr)
                     fd_info->shared_sym_det_ptr = sub_info->shared_sym_det;
@@ -371,7 +375,6 @@ void WSock::process_subscription_requests() {
                 subscription_ring.incrTail();
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(sub_delay_millis));
-            // usleep(sub_delay);
         }
     });
     subscription_thread.detach();
@@ -721,14 +724,20 @@ std::string_view WSock::get_next_message_from_websocket() {
 // Gets the current bid price
 // -----------------------------------------------------------------------
 double WSock::get_bid_price() {
-    return(current_fd_info->shared_sym_det_ptr->current_bid_price);
+    if(current_fd_info->shared_sym_det_ptr != nullptr)
+        return(current_fd_info->shared_sym_det_ptr->current_bid_price);
+    else
+        return(0.0);
 }
 
 // -----------------------------------------------------------------------
 // Gets the current ask price
 // -----------------------------------------------------------------------
 double WSock::get_ask_price() {
-    return(current_fd_info->shared_sym_det_ptr->current_ask_price);
+    if(current_fd_info->shared_sym_det_ptr != nullptr)
+        return(current_fd_info->shared_sym_det_ptr->current_ask_price);
+    else
+        return(0.0);        
 }
 
 // -----------------------------------------------------------------------
