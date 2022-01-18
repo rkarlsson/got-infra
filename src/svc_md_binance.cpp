@@ -126,42 +126,6 @@ void process_snapshot_requests(Logger *snapshot_logger) {
 }
 
 // -----------------------------------------------------------------------
-// This thread builds snapshots and then publishes them onto aeron snapshot message bus
-// -----------------------------------------------------------------------
-// void snapshot_publisher(Logger *snapshot_logger, WSock *wsocket, char *snapshot_buffer) {
-//     std::thread snapshot_publisher_thread([snapshot_logger, wsocket, snapshot_buffer]() {
-//         to_aeron *to_aeron_ss;
-//         uint64_t sleep_time_in_micros = 0;
-//         int num_messages = 0;
-
-//         to_aeron_ss = new to_aeron(AERON_SS);
-
-//         snapshot_logger->msg(INFO, "Starting Snapshot Publisher thread, sleeping for 60 seconds before loop is started");
-//         sleep(60);
-//         snapshot_logger->msg(INFO, "Snapshot Publisher loop now starting");
-
-//         int bin_snapshot_message_offset = 0;
-//         char *snapshot_msg_pointer;
-        
-//         sleep_time_in_micros = ((uint64_t) 3000000000) / wsocket->num_sockets();
-//         // Infinite loop that iterates over all items over and over
-//         while (1){
-//             num_messages = wsocket->get_next_snapshot(snapshot_buffer);
-//             for(int i = 0; i < num_messages; i++){
-//                 snapshot_msg_pointer = snapshot_buffer + bin_snapshot_message_offset;
-//                 to_aeron_ss->send_data(snapshot_msg_pointer, ((MessageHeader *) snapshot_msg_pointer)->msgLength);
-//                 bin_snapshot_message_offset += ((MessageHeader *) snapshot_msg_pointer)->msgLength;
-//             }
-//             // Recalculate every time, should mean that a snapshot takes ~3 seconds to achieve
-//             sleep_time_in_micros = ((uint64_t) 3000000) / wsocket->num_sockets();
-//             usleep(sleep_time_in_micros);
-//         }
-//     });
-//     snapshot_publisher_thread.detach();
-// }
-
-
-// -----------------------------------------------------------------------
 // This thread listens to snapshot requests and then generates and publishes the snapshot
 // -----------------------------------------------------------------------
 void snapshot_publisher(Logger *snapshot_logger, WSock *wsocket, char *snapshot_buffer) {

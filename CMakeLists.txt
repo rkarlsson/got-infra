@@ -13,7 +13,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS "-Wall -fPIC -std=c++20")
+set(CMAKE_CXX_FLAGS "-Wall -fPIC -std=c++20 -Wno-pessimizing-move")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
 

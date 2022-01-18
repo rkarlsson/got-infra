@@ -46,11 +46,6 @@ class BaseTradeAdapter {
     // Private Reference data structures
     std::unordered_map<uint8_t, StrategyInfoResponse *> strategy_info_map;
 
-    // Exchange details 
-    // std::string     _exchange;
-    // std::string     _location;
-    // uint8_t         _exchange_id;
-
     uint8_t         _order_environment;
 
     // This one holds all the configuration for the application
@@ -150,8 +145,6 @@ class BaseTradeAdapter {
     // Getters from the private baseclass variables
     /////////////////////////////
     trade_adapter_e get_exchange_state();
-    // uint8_t get_exchange_id();
-    // std::string get_exchange_name();
     uint8_t get_order_env();
 
     /////////////////////////////
