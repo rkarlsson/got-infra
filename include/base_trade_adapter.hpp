@@ -16,7 +16,8 @@
 #include "sl.hpp"
 #include "logger.hpp"
 #include <random>
-#include <openssl/hmac.h>
+#include "wolfssl/wolfcrypt/hmac.h"
+// #include <openssl/hmac.h>
 
 #include "Aeron.h"
 #include "from_aeron.hpp"

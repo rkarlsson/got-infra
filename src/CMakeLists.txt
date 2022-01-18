@@ -37,7 +37,7 @@ target_link_libraries(svc_md_kraken refdb aeron_library simdjson filewriter logg
 # SVC_OE_BINANCE - Order entry trade-adapter for all binance markets
 ###################################################
 add_executable(svc_oe_binance svc_oe_binance.cpp binance_trade_adapter.cpp base_trade_adapter.cpp )
-target_link_libraries(svc_oe_binance aeron_library simdjson config_db logger wsock wolfssl connector ${OPEN_SSL} ${EXTERNAL_LIBRARIES})
+target_link_libraries(svc_oe_binance aeron_library simdjson config_db logger wsock connector wolfssl ${EXTERNAL_LIBRARIES})
 # target_compile_options(svc_oe_binance PUBLIC -g)
 
 # SVC_MONITOR - Listens to all messages and writes to influx/stdout/binary file

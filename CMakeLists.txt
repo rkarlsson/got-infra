@@ -58,7 +58,7 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     endif()
 endif()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/submodules/aeron/CMakeLists.txt")
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/submodules/got-base/CMakeLists.txt")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
@@ -69,10 +69,11 @@ add_subdirectory(submodules/prometheus-cpp)
 
 # INCLUDE PATHS
 ###################################################
-set(MYSQL_INCL ./submodules/mysql-connector-cpp/include/mysqlx )
-set(AERON_INCL ./submodules/aeron/aeron-client/src/main/cpp/ )
-set(INFLUX_INCL ./submodules/influxdb-cxx/include )
-set(WOLFSSL_INCL ./submodules/wolfssl )
+set(GOT_BASE_INCL submodules/got-base/include )
+set(MYSQL_INCL submodules/got-base/submodules/mysql-connector-cpp/include/mysqlx )
+set(AERON_INCL submodules/got-base/submodules/aeron/aeron-client/src/main/cpp )
+set(INFLUX_INCL submodules/influxdb-cxx/include )
+set(WOLFSSL_INCL submodules/wolfssl )
 set(JSON_INCL ./submodules/json )
 set(PROMETHEUS_INCL_DETAIL build/submodules/prometheus-cpp/core/include )
 set(PROMETHEUS_INCL_PULL_DETAIL build/submodules/prometheus-cpp/pull/include )
@@ -81,6 +82,7 @@ set(PROMETHEUS_INCL_PULL submodules/prometheus-cpp/pull/include )
 
 include_directories( 
     ${CMAKE_CURRENT_SOURCE_DIR}/ 
+    ${GOT_BASE_INCL} 
     ${WOLFSSL_INCL} 
     ${JSON_INCL} 
     ${MYSQL_INCL} 
@@ -96,6 +98,5 @@ include_directories(
 # Set variables I can use for collected library dependencies
 ###################################################
 set(EXTERNAL_LIBRARIES ${CURL_LIB} ${PTHREAD_LIB} aeron_client ${Z_LIB} )
-set(OPEN_SSL ${CRYPTO_LIB} ${Z_LIB} ${OPENSSL_LIB})
 
 add_subdirectory(src)

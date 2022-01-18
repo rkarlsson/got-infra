@@ -174,39 +174,66 @@ int BaseTradeAdapter::convert_to_hex(char *buffer, unsigned char *array_to_conve
     return(buffer_offset);
 }
 
+// // =================================================================================
+// std::string BaseTradeAdapter::hmacHex(std::string key, std::string msg) {  
+//     unsigned char hash[32];
+//     char buffer[65];
+//     buffer[64] = 0;
+//     HMAC_CTX *hmac;
+//     unsigned int len = 32;
+
+//     hmac = HMAC_CTX_new();
+//     HMAC_Init_ex(hmac, &key[0], key.length(), EVP_sha256(), NULL);
+//     HMAC_Update(hmac, (unsigned char*)&msg[0], msg.length());
+//     HMAC_Final(hmac, hash, &len);
+//     HMAC_CTX_free(hmac);
+//     convert_to_hex(buffer, hash, 32);
+//     return (std::string(buffer, 64));
+// }
+
 // =================================================================================
 std::string BaseTradeAdapter::hmacHex(std::string key, std::string msg) {  
-    unsigned char hash[32];
-    char buffer[65];
-    buffer[64] = 0;
-    HMAC_CTX *hmac;
-    unsigned int len = 32;
-
-    hmac = HMAC_CTX_new();
-    HMAC_Init_ex(hmac, &key[0], key.length(), EVP_sha256(), NULL);
-    HMAC_Update(hmac, (unsigned char*)&msg[0], msg.length());
-    HMAC_Final(hmac, hash, &len);
-    HMAC_CTX_free(hmac);
-    convert_to_hex(buffer, hash, 32);
+    Hmac        hmac;
+    byte        hmacDigest[SHA256_DIGEST_SIZE];
+    char        buffer[65];
+    
+    buffer[64] = 0;    
+    wc_HmacSetKey(&hmac, SHA256, (byte *) key.c_str(), sizeof(key));
+    wc_HmacUpdate(&hmac, (byte *) msg.c_str(), sizeof(msg));
+    wc_HmacFinal(&hmac, hmacDigest);
+    convert_to_hex(buffer, hmacDigest, 32);
     return (std::string(buffer, 64));
 }
 
+// // =================================================================================
+// int BaseTradeAdapter::hmacHex(std::string key, std::string msg, char *output_string) {  
+//     unsigned char hash[32];
+//     output_string[64] = 0;
+//     HMAC_CTX *hmac;
+//     unsigned int len = 32;
+
+//     memcpy(output_string, "&signature=", 11);
+//     output_string+=11;
+
+//     hmac = HMAC_CTX_new();
+//     HMAC_Init_ex(hmac, &key[0], key.length(), EVP_sha256(), NULL);
+//     HMAC_Update(hmac, (unsigned char*)&msg[0], msg.length());
+//     HMAC_Final(hmac, hash, &len);
+//     HMAC_CTX_free(hmac);
+//     convert_to_hex(output_string, hash, 32);
+//     return (75);
+// }
+
 // =================================================================================
 int BaseTradeAdapter::hmacHex(std::string key, std::string msg, char *output_string) {  
-    unsigned char hash[32];
-    output_string[64] = 0;
-    HMAC_CTX *hmac;
-    unsigned int len = 32;
-
-    memcpy(output_string, "&signature=", 11);
-    output_string+=11;
-
-    hmac = HMAC_CTX_new();
-    HMAC_Init_ex(hmac, &key[0], key.length(), EVP_sha256(), NULL);
-    HMAC_Update(hmac, (unsigned char*)&msg[0], msg.length());
-    HMAC_Final(hmac, hash, &len);
-    HMAC_CTX_free(hmac);
-    convert_to_hex(output_string, hash, 32);
+    Hmac        hmac;
+    byte        hmacDigest[SHA256_DIGEST_SIZE];
+    
+    output_string[64] = 0;   
+    wc_HmacSetKey(&hmac, SHA256, (byte *) key.c_str(), sizeof(key));
+    wc_HmacUpdate(&hmac, (byte *) msg.c_str(), sizeof(msg));
+    wc_HmacFinal(&hmac, hmacDigest);
+    convert_to_hex(output_string, hmacDigest, 32);
     return (75);
 }
 
