@@ -6,7 +6,7 @@
 	url = https://github.com/jupp0r/prometheus-cpp.git
 [submodule "submodules/influxdb-cxx"]
 	path = submodules/influxdb-cxx
-	url = git://github.com/awegrzyn/influxdb-cxx
+	url = git@github.com:awegrzyn/influxdb-cxx
 [submodule "submodules/got-base"]
 	path = submodules/got-base
 	url = git@github.com:rkarlsson/got-base.git
