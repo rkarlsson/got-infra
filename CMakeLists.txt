@@ -70,6 +70,7 @@ add_subdirectory(submodules/prometheus-cpp)
 # INCLUDE PATHS
 ###################################################
 set(GOT_BASE_INCL submodules/got-base/include )
+set(GOT_BASE_SBE_INCL submodules/got-base/sbe/include/gen/sbe )
 set(MYSQL_INCL submodules/got-base/submodules/mysql-connector-cpp/include/mysqlx )
 set(AERON_INCL submodules/got-base/submodules/aeron/aeron-client/src/main/cpp )
 set(INFLUX_INCL submodules/influxdb-cxx/include )
@@ -82,7 +83,8 @@ set(PROMETHEUS_INCL_PULL submodules/prometheus-cpp/pull/include )
 
 include_directories( 
     ${CMAKE_CURRENT_SOURCE_DIR}/ 
-    ${GOT_BASE_INCL} 
+    ${GOT_BASE_INCL}
+    ${GOT_BASE_SBE_INCL}
     ${WOLFSSL_INCL} 
     ${JSON_INCL} 
     ${MYSQL_INCL} 
