@@ -794,8 +794,9 @@ void WSock::release_plbook_lock() {
 // thread to get a "current state" for snapshot publishing.
 // -----------------------------------------------------------------------
 void WSock::process_plbook_update(PLUpdates *pl_update){
+    sbe::PLUpdates *pl = new sbe::PLUpdates((char *) pl_update, 1024*1024);
     aquire_plbook_lock();
-    current_fd_info->pl_book->process_update(pl_update);
+    current_fd_info->pl_book->process_update(pl);
     release_plbook_lock();
 }
 

@@ -73,11 +73,13 @@ int main(int argc, char* argv[]) {
                 tob_ask = tob->ask_price;
                 break;
 
-            case PL_UPDATE:
-                plupdate = (struct PLUpdates*)msg_ptr;
-                pl_book.process_update(plupdate);
+            case sbe::PLUpdates::SBE_TEMPLATE_ID:
+                {
+                sbe::PLUpdates *pl = new sbe::PLUpdates((char *) msg_ptr, 1024*1024);
+                pl_book.process_update(pl);
                 std::cout << "(" << std::to_string(pl_book.get_touch_price_ask()) << " - " << std::to_string(tob_ask) << ")     :     (";
                 std::cout << std::to_string(pl_book.get_touch_price_bid()) << " - " << std::to_string(tob_bid) << ")" << std::endl;
+                }
                 break;
 
             case INSTRUMENT_CLEAR_BOOK:
