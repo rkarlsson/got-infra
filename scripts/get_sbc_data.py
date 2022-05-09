@@ -93,18 +93,19 @@ def decode_tx(address, input_data, abi):
   else:
     return ('no matching abi', None, None)
 
-def handle_event(blockid, web3):
-    block = web3.eth.get_block(blockid.hex())
-    print("Found a new block, nr: " + str(block['number']))
-    print("\nTransactions:")
-    for transaction in block['transactions']:
-        tx = web3.eth.get_transaction(transaction.hex())
+def handle_event(event, web3):
+  print(event)
+    # block = web3.eth.get_block(blockid.hex())
+    # print("Found a new block, nr: " + str(block['number']))
+    # print("\nTransactions:")
+    # for transaction in block['transactions']:
+        # tx = web3.eth.get_transaction(transaction.hex())
         # print("From: " + tx['from'] + " :: To: " + tx['to'] + " :: TxIndex: " + str(tx['transactionIndex']) + " :: GasFee: " + str(tx['gas']))
         # output = decode_tx(tx['hash'], tx['input'], sample_abi)
         # print(output)
-        if tx['to'] == '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45':
-          print(tx)
-          print("")
+        # if tx['to'] == '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45':
+        #   print(tx)
+        #   print("")
     #print(block)
 
 def log_loop(poll_interval, web3):
@@ -117,11 +118,11 @@ def log_loop(poll_interval, web3):
     allPairsLength = factory_contract.functions.allPairsLength().call()
     f = open("IUniswapV2Pair.json")
     pairs_abi = json.load(f)["abi"]
-    block_filter = web3.eth.filter('latest')
+    block_filter = web3.eth.filter({'fromBlock':'latest'})
 
     while True:
-        for blockid in block_filter.get_new_entries():
-            handle_event(blockid, web3)
+        for event in block_filter.get_new_entries():
+            handle_event(event, web3)
         time.sleep(poll_interval)
 
 def main():
