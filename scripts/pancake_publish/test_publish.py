@@ -8,14 +8,14 @@ bsc="https://bsc-dataseed.binance.org/"
 web3 = Web3(Web3.HTTPProvider(bsc))
 
 # uniswap_Factory
-f = open("../IUniswapV2Factory.json")
+f = open("../bsc_data/IUniswapV2Factory.json")
 factory_abi = json.load(f)["abi"]
 factory_address = '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73'
 factory_contract = web3.eth.contract(address=factory_address, abi=factory_abi)
 
 allPairsLength = factory_contract.functions.allPairsLength().call()
 
-f = open("../IUniswapV2Pair.json")
+f = open("../bsc_data/IUniswapV2Pair.json")
 pairs_abi = json.load(f)["abi"]
 
 w = Writer()
