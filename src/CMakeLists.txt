@@ -112,8 +112,8 @@ add_executable(orderbook_tester orderbook_tester.cpp)
 target_link_libraries(orderbook_tester aeron_library binfile sequencebinfile mergedorderbook gzlib ${Z_LIB})
 
 # libaeron_writer - this allows interaction from Python scripts with Aeron
-add_library(libaeron_writer SHARED aeron_writer.cpp)
-target_link_libraries(libaeron_writer aeron_library)
+add_library(aeron_writer SHARED aeron_writer.cpp)
+target_link_libraries(aeron_writer aeron_library)
 
 # SVC_SIG_GENERATOR - Signal generator
 ###################################################
