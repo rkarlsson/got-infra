@@ -15,7 +15,7 @@ class Writer(object):
 
     def __init__(self):
         try:
-            self.library = ctypes.cdll.LoadLibrary("./libaeron_writer.so")
+            self.library = ctypes.cdll.LoadLibrary("../../build/src/libaeron_writer.so")
          
             """ alloc/dealloc of episode instance pointers: """
             self.library.new_instance.restype = ctypes.c_void_p
