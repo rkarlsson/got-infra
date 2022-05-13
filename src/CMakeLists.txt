@@ -113,7 +113,7 @@ target_link_libraries(orderbook_tester aeron_library binfile sequencebinfile mer
 
 # libaeron_writer - this allows interaction from Python scripts with Aeron
 add_library(aeron_writer SHARED aeron_writer.cpp)
-target_link_libraries(aeron_writer aeron_library)
+target_link_libraries(aeron_writer aeron_library ${PTHREAD_LIB} aeron_client)
 
 # SVC_SIG_GENERATOR - Signal generator
 ###################################################
