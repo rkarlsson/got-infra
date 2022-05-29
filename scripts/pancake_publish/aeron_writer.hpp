@@ -1,6 +1,5 @@
 #include "to_aeron.hpp"
 #include "aeron_types.hpp"
-#include "ToBUpdate.h"
 
 extern "C"
 
@@ -12,7 +11,7 @@ struct t_tob_state {
 class AeronWriter {
 
   to_aeron * to_aeron_writer;
-  sbe::ToBUpdate *tob_sbe;
+  struct ToBUpdate *t;
   char *op_buffer;
 
   public:
