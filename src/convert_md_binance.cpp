@@ -330,7 +330,6 @@ int main(int argc, char** argv) {
                                 }
                         }
 
-                        sbe::PLUpdates *pl = new sbe::PLUpdates((char *)msg_pointer, 1024*1024);
                         // Check if seq number mismatch.. then start the process to figure out if we need to snapshot..
                         if(previous_last_seq_no != decode_response.previous_end_seq_no){
                             if(((PLUpdates *) msg_pointer)->end_seq_number < previous_last_seq_no){
@@ -363,7 +362,7 @@ int main(int argc, char** argv) {
                                                 ((PLUpdates *) snapshot_msg_pointer)->sending_timestamp = ((PLUpdates *) snapshot_msg_pointer)->receive_timestamp + 2500;
                                                 // Last but not least - update the sequence number
                                                 previous_last_seq_no = ((PLUpdates *) snapshot_msg_pointer)->end_seq_number;                                            
-                                                pl_book.process_update(pl);
+                                                pl_book.process_update((PLUpdates *) snapshot_msg_pointer);
 
                                                 if( (((PLUpdates *) msg_pointer)->exchange_timestamp >= filter_start_time) &&
                                                     (((PLUpdates *) msg_pointer)->exchange_timestamp <= filter_end_time) &&
@@ -386,7 +385,7 @@ int main(int argc, char** argv) {
                         }
 
                         // Update the orderbook with the updates - then check if bid/ask is crossed..
-                        pl_book.process_update(pl);
+                        pl_book.process_update((PLUpdates *) msg_pointer);
 
                         // Only check if crossed book at the last update in the series from the decoder
                         if(i == (decode_response.num_messages - 1)){

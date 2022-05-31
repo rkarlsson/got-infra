@@ -49,13 +49,13 @@ void get_snapshot_for_instrument(MergedOrderbook *pl_book, uint32_t instrument_i
     // Fragment handler lambda, putting it here so I can easily pass extra variables..:)
     auto snap_fragment_lambda = [&pl_book, &instrument_id, &finished](const AtomicBuffer &buffer, util::index_t offset, util::index_t length, const Header &header) {
         struct MessageHeader *m = (MessageHeader*)(reinterpret_cast<const char *>(buffer.buffer()) + offset);
-        if(m->msgType == sbe::PLUpdates::SBE_TEMPLATE_ID) {
-            sbe::PLUpdates *pl = new sbe::PLUpdates((char *) m, 1024*1024);
-            if(pl->instrument_id() == instrument_id){
+        if(m->msgType == PL_UPDATE) {
+            struct PLUpdates *pl_update = (struct PLUpdates*)m;
+            if(pl_update->instrument_id == instrument_id){
                 // Process update
-                pl_book->process_update(pl);
+                pl_book->process_update(pl_update);
                 // Check if this is the last message from the series
-                if(pl->update_flags() & PL_UPDATE_LAST_MSG_IN_SERIES){
+                if(pl_update->update_flags & PL_UPDATE_LAST_MSG_IN_SERIES){
                     // Set this to true so the loop has finished
                     finished = true;
                 }
@@ -146,19 +146,18 @@ int main(int argc, char** argv) {
             }
             break;
             
-            case sbe::PLUpdates::SBE_TEMPLATE_ID: {
-                sbe::PLUpdates *pl = new sbe::PLUpdates((char *) m, 1024*1024);
-                // struct PLUpdates *pl_update = (struct PLUpdates*)m;
+            case PL_UPDATE: {
+                struct PLUpdates *pl_update = (struct PLUpdates*)m;
 
-                auto item = pl_books.find(pl->instrument_id());
+                auto item = pl_books.find(pl_update->instrument_id);
                 if(item != pl_books.end()){
                     // we have the symbol orderbook..
-                    item->second->process_update(pl);
+                    item->second->process_update(pl_update);
                 } else {
                     auto new_book = new MergedOrderbook();
-                    get_snapshot_for_instrument(new_book, pl->instrument_id(), to_aeron_ss);
-                    new_book->process_update(pl);
-                    pl_books[pl->instrument_id()] = new_book;
+                    get_snapshot_for_instrument(new_book, pl_update->instrument_id, to_aeron_ss);
+                    new_book->process_update(pl_update);
+                    pl_books[pl_update->instrument_id] = new_book;
                 }
                 msg_counter++;
             }
