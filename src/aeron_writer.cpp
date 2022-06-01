@@ -4,7 +4,7 @@
 
 AeronWriter::AeronWriter() {
   printf("Creating writer...\n");
-  to_aeron_writer = new to_aeron(AERON_SS);
+  to_aeron_writer = new to_aeron(AERON_IO);
   op_buffer = (char *) malloc(1024*1024);
   t = (ToBUpdate *)malloc(sizeof(struct ToBUpdate));
   t->msg_header   = {sizeof(ToBUpdate), TOB_UPDATE, 1};
