@@ -9,10 +9,12 @@ struct t_tob_state {
 };  
 
 class AeronWriter {
+  private:
+    to_aeron * to_aeron_writer;
+    struct ToBUpdate *t;
+    char *op_buffer;
 
-  to_aeron * to_aeron_writer;
-  struct ToBUpdate *t;
-  char *op_buffer;
+    uint64_t get_current_ts_ns();
 
   public:
     AeronWriter();

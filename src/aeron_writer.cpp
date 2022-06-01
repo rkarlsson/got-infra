@@ -11,9 +11,16 @@ AeronWriter::AeronWriter() {
   printf("Created writer...\n");
 }
 
+uint64_t AeronWriter::get_current_ts_ns() {
+    struct timespec t;
+    clock_gettime(CLOCK_REALTIME, &t);
+    return((t.tv_sec*1000000000L)+t.tv_nsec);
+}
+
 void AeronWriter::send_tob(t_tob_state *tob) {
-  t->receive_timestamp  = 0;
-  t->exchange_timestamp = 0;
+  auto ts = get_current_ts_ns();
+  t->receive_timestamp  = ts;
+  t->exchange_timestamp = ts;
   t->bid_price          = tob->price;
   t->bid_qty            = 0;
   t->ask_price          = tob->price;
