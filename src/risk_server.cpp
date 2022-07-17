@@ -95,22 +95,22 @@ uint64_t RiskServer::get_current_ts_ns() {
     return((t.tv_sec*1000000000L)+t.tv_nsec);
 }
 
-// =================================================================================
-void RiskServer::rollover_database(struct RolloverRequest *rollover_request) {
-    // Reques rollover from database
-    trading_db->rollover_day(rollover_request->request_time_stamp);
+// // =================================================================================
+// void RiskServer::rollover_database(struct RolloverRequest *rollover_request) {
+//     // Reques rollover from database
+//     trading_db->rollover_day(rollover_request->request_time_stamp);
 
-    // Tell back the bus that it has acked and taken care of
-    struct timespec t;
-    struct RolloverResponse rollover_response;
-    clock_gettime(CLOCK_REALTIME, &t);
-    uint64_t recv_ts = (t.tv_sec*1000000000L)+t.tv_nsec;    
-    rollover_response.msg_header.msgType = ROLL_OVER_RESPONSE;
-    rollover_response.msg_header.msgLength = sizeof(struct RolloverRequest);
-    rollover_response.msg_header.protoVersion = 1;
-    rollover_response.response_time_stamp = recv_ts;
-    to_aeron_io->send_data((char *)&rollover_response, sizeof(RolloverResponse));
-}
+//     // Tell back the bus that it has acked and taken care of
+//     struct timespec t;
+//     struct RolloverResponse rollover_response;
+//     clock_gettime(CLOCK_REALTIME, &t);
+//     uint64_t recv_ts = (t.tv_sec*1000000000L)+t.tv_nsec;    
+//     rollover_response.msg_header.msgType = ROLL_OVER_RESPONSE;
+//     rollover_response.msg_header.msgLength = sizeof(struct RolloverRequest);
+//     rollover_response.msg_header.protoVersion = 1;
+//     rollover_response.response_time_stamp = recv_ts;
+//     to_aeron_io->send_data((char *)&rollover_response, sizeof(RolloverResponse));
+// }
 
 // =================================================================================
 void RiskServer::recalculate_risk(uint32_t internal_order_id, uint32_t instrument_id, bool order_removed) {
@@ -675,11 +675,11 @@ return
                 }
                 break;
 
-            case ROLL_OVER_REQUEST: {
-                    struct RolloverRequest *r = (struct RolloverRequest *)msg_ptr;
-                    rollover_database(r);
-                }
-                break;
+            // case ROLL_OVER_REQUEST: {
+            //         struct RolloverRequest *r = (struct RolloverRequest *)msg_ptr;
+            //         rollover_database(r);
+            //     }
+            //     break;
 
             case ACCOUNT_INFO_UPDATE: {
                     struct AccountInfoResponse *account_info = (struct AccountInfoResponse *)msg_ptr;

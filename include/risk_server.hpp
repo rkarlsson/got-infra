@@ -125,7 +125,7 @@ class RiskServer{
     void risk_restart_component(ComponentRestartRequest *restart_request);
         
     // Rolls the database
-    void rollover_database(struct RolloverRequest *rollover_request);
+    // void rollover_database(struct RolloverRequest *rollover_request);
 
     // This one gets called everytime refdb finds a new symbol. Initialise internal datastructures where needed
     void new_instrument_callback(struct InstrumentInfoResponse *);

@@ -43,6 +43,11 @@ if(NOT Z_LIB)
   message(FATAL_ERROR "z library not found")
 endif()
 
+find_library(MYSQL_CAPI_LIB mysqlclient)
+if(NOT MYSQL_CAPI_LIB)
+  message(FATAL_ERROR "mysqlclient library not found")
+endif()
+
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
@@ -71,7 +76,7 @@ add_subdirectory(submodules/prometheus-cpp)
 ###################################################
 set(GOT_BASE_INCL submodules/got-base/include )
 set(GOT_BASE_SBE_INCL submodules/got-base/sbe/include/gen/sbe )
-set(MYSQL_INCL submodules/got-base/submodules/mysql-connector-cpp/include/mysqlx )
+set(MYSQL_CAPI_INCL /usr/include/mysql )
 set(AERON_INCL submodules/got-base/submodules/aeron/aeron-client/src/main/cpp )
 set(INFLUX_INCL submodules/influxdb-cxx/include )
 set(WOLFSSL_INCL submodules/wolfssl )
@@ -87,7 +92,7 @@ include_directories(
     ${GOT_BASE_SBE_INCL}
     ${WOLFSSL_INCL} 
     ${JSON_INCL} 
-    ${MYSQL_INCL} 
+    ${MYSQL_CAPI_INCL} 
     ${AERON_INCL} 
     ${INFLUX_INCL}
     ${PROMETHEUS_INCL_DETAIL}
@@ -99,6 +104,6 @@ include_directories(
 
 # Set variables I can use for collected library dependencies
 ###################################################
-set(EXTERNAL_LIBRARIES ${CURL_LIB} ${PTHREAD_LIB} aeron_client ${Z_LIB} )
+set(EXTERNAL_LIBRARIES ${CURL_LIB} ${PTHREAD_LIB} aeron_client ${Z_LIB} ${MYSQL_CAPI_LIB} ${OPENSSL_LIB} ${CRYPTO_LIB} )
 
 add_subdirectory(src)

@@ -22,7 +22,7 @@ target_link_libraries(svc_md_binance
     logger 
     wsock 
     gzlib 
-    connector 
+    mysqlclient 
     wolfssl
     ${EXTERNAL_LIBRARIES}
 )
@@ -31,13 +31,13 @@ target_link_libraries(svc_md_binance
 # SVC_MD_KRAKEN - covers all kraken right now use the new websocket library
 ###################################################
 add_executable(svc_md_kraken svc_md_kraken.cpp kraken_md_process.cpp )
-target_link_libraries(svc_md_kraken refdb aeron_library simdjson filewriter logger wsock2 connector wolfssl ${EXTERNAL_LIBRARIES})
+target_link_libraries(svc_md_kraken refdb aeron_library simdjson filewriter logger wsock2 wolfssl ${EXTERNAL_LIBRARIES})
 # target_compile_options(svc_md_kraken PUBLIC -g)
 
 # SVC_OE_BINANCE - Order entry trade-adapter for all binance markets
 ###################################################
 add_executable(svc_oe_binance svc_oe_binance.cpp binance_trade_adapter.cpp base_trade_adapter.cpp )
-target_link_libraries(svc_oe_binance aeron_library simdjson config_db logger wsock connector wolfssl ${EXTERNAL_LIBRARIES})
+target_link_libraries(svc_oe_binance aeron_library simdjson config_db logger wsock wolfssl ${EXTERNAL_LIBRARIES})
 # target_compile_options(svc_oe_binance PUBLIC -g)
 
 # SVC_MONITOR - Listens to all messages and writes to influx/stdout/binary file
@@ -62,12 +62,11 @@ endif()
 ###################################################
 add_executable(svc_risk svc_risk.cpp risk_server.cpp )
 target_link_directories(svc_risk 
-    PUBLIC submodules/mysql-connector-cpp/
     PUBLIC submodules/aeron/lib 
     PUBLIC lib 
     PUBLIC submodules/wolfssl/build
 )
-target_link_libraries(svc_risk aeron_library refdb trading_db logger connector ${EXTERNAL_LIBRARIES})
+target_link_libraries(svc_risk aeron_library refdb trading_db logger ${EXTERNAL_LIBRARIES})
 # target_compile_options(svc_risk PUBLIC -g)  # same as PRIVATE + INTERFACE
 
 # SEND_OE_MSG - Order sender
