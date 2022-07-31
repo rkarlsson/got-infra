@@ -74,7 +74,7 @@ class FileNameManager:
                     else:
                         # we need to add this to the bad_pairs list
                         filename = json_file.split("/")[-1]
-                        snapshot_filename = json_file.split("/")[:-1] + "/" + filename.split("_")[:1] + "_ss.txt"
+                        snapshot_filename = file_dirname + "/" + filename.split("_")[:1][0] + "_ss.txt"
                         new_entry = {   "json_file_all":json_file, 
                                         "json_file_ss":snapshot_filename
                                     }
