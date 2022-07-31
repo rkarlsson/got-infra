@@ -1311,27 +1311,17 @@ fragment_handler_t BinanceTradeAdapter::aeron_msg_handler() {
                         return;
                     }
 
-                    if (asset_id_to_base_name.count(repay_request->borrow_asset_id)) {
-                        asset_name = boost::algorithm::to_upper_copy(asset_id_to_base_name[borrow_request->borrow_asset_id]);
+                    if (asset_id_to_base_name.count(repay_request->asset_id)) {
+                        asset_name = boost::algorithm::to_upper_copy(asset_id_to_base_name[repay_request->asset_id]);
                         logger->msg(INFO, "Found matching Asset name for asset id: " + asset_name);
                     } else {
-                        logger->msg(INFO, "Found no matching Asset name for asset id: " + std::to_string(borrow_request->borrow_asset_id));
-                    }
-                    if (asset_id_to_base_name.count(repay_request->collateral_asset_id)) {
-                        collateral_asset_name = boost::algorithm::to_upper_copy(asset_id_to_base_name[borrow_request->collateral_asset_id]);
-                        logger->msg(INFO, "Found matching Asset name for asset id: " + asset_name);
-                    } else {
-                        logger->msg(INFO, "Found no matching Asset name for asset id: " + std::to_string(borrow_request->collateral_asset_id));
+                        logger->msg(INFO, "Found no matching Asset name for asset id: " + std::to_string(repay_request->asset_id));
                     }
 
-                    body << "coin=" << asset_name;
-                    std::stringstream amount_to_borrow;
-                    amount_to_borrow << std::fixed << std::setprecision (8) << repay_request->borrow_amount;
-                    body << "&amount=" << amount_to_borrow.str();
-                    body << "&collateralCoin=" << collateral_asset_name;
-                    std::stringstream collateral_amount;
-                    collateral_amount << std::fixed << std::setprecision (8) << repay_request->collateral_amount;
-                    body << "&collateralAmount=" << collateral_amount.str();
+                    body << "asset=" << asset_name;
+                    std::stringstream amount_to_repay;
+                    amount_to_repay << std::fixed << std::setprecision (8) << repay_request->repay_qty;
+                    body << "&amount=" << amount_to_repay.str();
                     body << "&timestamp=" << get_current_ts()/1000000; 
                     body_str = body.str();
                     std::string signature = hmacHex(SECRET_KEY, body_str);
@@ -1372,7 +1362,7 @@ fragment_handler_t BinanceTradeAdapter::aeron_msg_handler() {
                         reject.rejected_id = repay_request->internal_borrow_id;
                         reject.reject_reason = 0;
                         send_risk_request_reject(&reject);
-                        logger->msg(INFO, "Got Exchange Margin Borrow Request Reject for: " + std::to_string(borrow_request->internal_borrow_id));
+                        logger->msg(INFO, "Got Exchange Margin Borrow Request Reject for: " + std::to_string(repay_request->internal_borrow_id));
                     } 
                     else {
 

@@ -417,31 +417,31 @@ fragment_handler_t Monitor::process_io_messages() {
                 }
                 break;
 
-                case ROLL_OVER_REQUEST: {
-                    struct RolloverRequest *r = (struct RolloverRequest*)m;
-                    if(output_type == STDOUT_OUTPUT_TYPE){
-                        std::cout << "Rollover Request found:" << std::endl;
-                        std::cout << "  Request_Timestamp= " << std::to_string(static_cast<long long int>(r->request_time_stamp)) << std::endl;
-                    }
+                // case ROLL_OVER_REQUEST: {
+                //     struct RolloverRequest *r = (struct RolloverRequest*)m;
+                //     if(output_type == STDOUT_OUTPUT_TYPE){
+                //         std::cout << "Rollover Request found:" << std::endl;
+                //         std::cout << "  Request_Timestamp= " << std::to_string(static_cast<long long int>(r->request_time_stamp)) << std::endl;
+                //     }
 
-                    if(output_type == FILE_OUTPUT_TYPE){
-                        bin_file_risk->write_message((char *)r, (uint32_t) r->msg_header.msgLength);
-                    }
-                }
-                break;
+                //     if(output_type == FILE_OUTPUT_TYPE){
+                //         bin_file_risk->write_message((char *)r, (uint32_t) r->msg_header.msgLength);
+                //     }
+                // }
+                // break;
 
-                case ROLL_OVER_RESPONSE: {
-                    struct RolloverResponse *r = (struct RolloverResponse*)m;
-                    if(output_type == STDOUT_OUTPUT_TYPE){
-                        std::cout << "Rollover Response found:" << std::endl;
-                        std::cout << "  Response_Timestamp= " << std::to_string(static_cast<long long int>(r->response_time_stamp)) << std::endl;
-                    }
+                // case ROLL_OVER_RESPONSE: {
+                //     struct RolloverResponse *r = (struct RolloverResponse*)m;
+                //     if(output_type == STDOUT_OUTPUT_TYPE){
+                //         std::cout << "Rollover Response found:" << std::endl;
+                //         std::cout << "  Response_Timestamp= " << std::to_string(static_cast<long long int>(r->response_time_stamp)) << std::endl;
+                //     }
 
-                    if(output_type == FILE_OUTPUT_TYPE){
-                        bin_file_risk->write_message((char *)r, (uint32_t) r->msg_header.msgLength);
-                    }
-                }
-                break;
+                //     if(output_type == FILE_OUTPUT_TYPE){
+                //         bin_file_risk->write_message((char *)r, (uint32_t) r->msg_header.msgLength);
+                //     }
+                // }
+                // break;
 
                 case ACCOUNT_INFO_UPDATE: {
                     struct AccountInfoResponse *a = (struct AccountInfoResponse *)m;
