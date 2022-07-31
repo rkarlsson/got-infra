@@ -1281,6 +1281,122 @@ fragment_handler_t BinanceTradeAdapter::aeron_msg_handler() {
                 }
                     break;
 
+                case MARGIN_REPAY_REQUEST: {
+                    MarginRepayRequest *repay_request = (MarginRepayRequest *) m;
+                    std::string post_data;
+                    std::stringstream body;
+                    std::string body_str;
+                    std::string response;
+                    std::string asset_name = "";
+                    std::string collateral_asset_name = "";
+                    std::string rest_endpoint = listenkey_map[16]->rest_endpoint_margin;
+                    
+                    // Only binance specific requests
+                    if((repay_request->exchange_id < 16) || (repay_request->exchange_id > 18)){
+                        break;
+                    }
+
+                    // We only support this for Binance - no other exchanges has this API
+                    if (repay_request->exchange_id != 16) {
+                        // Send generic riskrequestreject
+                        logger->msg(INFO, "Not supported for this exchange, sending RiskRequestReject back to requestor");
+                        RiskRequestReject reject;
+                        reject.msg_header = {sizeof(RiskRequestReject), RISK_REQUEST_REJECT, 1};
+                        memset(reject.reject_message, 0, 128);
+                        strncpy(reject.reject_message, "Not supported for this exchange", 128);
+                        reject.exchange_id = repay_request->exchange_id;
+                        reject.rejected_id = repay_request->internal_borrow_id;
+                        reject.reject_reason = 0;
+                        send_risk_request_reject(&reject);
+                        return;
+                    }
+
+                    if (asset_id_to_base_name.count(repay_request->borrow_asset_id)) {
+                        asset_name = boost::algorithm::to_upper_copy(asset_id_to_base_name[borrow_request->borrow_asset_id]);
+                        logger->msg(INFO, "Found matching Asset name for asset id: " + asset_name);
+                    } else {
+                        logger->msg(INFO, "Found no matching Asset name for asset id: " + std::to_string(borrow_request->borrow_asset_id));
+                    }
+                    if (asset_id_to_base_name.count(repay_request->collateral_asset_id)) {
+                        collateral_asset_name = boost::algorithm::to_upper_copy(asset_id_to_base_name[borrow_request->collateral_asset_id]);
+                        logger->msg(INFO, "Found matching Asset name for asset id: " + asset_name);
+                    } else {
+                        logger->msg(INFO, "Found no matching Asset name for asset id: " + std::to_string(borrow_request->collateral_asset_id));
+                    }
+
+                    body << "coin=" << asset_name;
+                    std::stringstream amount_to_borrow;
+                    amount_to_borrow << std::fixed << std::setprecision (8) << repay_request->borrow_amount;
+                    body << "&amount=" << amount_to_borrow.str();
+                    body << "&collateralCoin=" << collateral_asset_name;
+                    std::stringstream collateral_amount;
+                    collateral_amount << std::fixed << std::setprecision (8) << repay_request->collateral_amount;
+                    body << "&collateralAmount=" << collateral_amount.str();
+                    body << "&timestamp=" << get_current_ts()/1000000; 
+                    body_str = body.str();
+                    std::string signature = hmacHex(SECRET_KEY, body_str);
+                    post_data = "?" + body_str + "&signature=" + signature;
+                    std::string tmp_url = rest_endpoint + "loan/borrow" + post_data;
+                    logger->msg(INFO, "URL = " + tmp_url);
+                    struct curl_slist *chunk = NULL;
+                    std::string hdrs = "X-MBX-APIKEY: " + API_KEY;
+                    chunk = curl_slist_append(chunk, hdrs.c_str());
+                    curl_easy_setopt(curl, CURLOPT_URL, tmp_url.c_str());
+                    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
+                    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_func);
+                    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+                    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+                    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+                    CURLcode rc = curl_easy_perform(curl);
+                    if (rc) {
+                        logger->msg(ERROR, curl_easy_strerror(rc));
+                        return;
+                    }
+                    logger->msg(INFO, "margin borrow response=" + response);
+                    simdjson::dom::element exchange_json_message;
+                    auto error = parser.parse(response.c_str(), response.length()).get(exchange_json_message);
+                    if (error) { 
+                        std::stringstream error_message; 
+                        error_message << error;
+                        logger->msg(ERROR, "Got an error when parsing: " + error_message.str());
+                        return; 
+                    }
+
+                    if( (exchange_json_message["code"].error() != simdjson::NO_SUCH_FIELD) && 
+                        (exchange_json_message["msg"].error() != simdjson::NO_SUCH_FIELD)) {
+                        RiskRequestReject reject;
+                        reject.msg_header = {sizeof(RiskRequestReject), RISK_REQUEST_REJECT, 1};
+                        memset(reject.reject_message, 0, 128);
+                        strncpy(reject.reject_message, as_string(exchange_json_message["msg"]).c_str(), 127);
+                        reject.exchange_id = 16;
+                        reject.rejected_id = repay_request->internal_borrow_id;
+                        reject.reject_reason = 0;
+                        send_risk_request_reject(&reject);
+                        logger->msg(INFO, "Got Exchange Margin Borrow Request Reject for: " + std::to_string(borrow_request->internal_borrow_id));
+                    } 
+                    else {
+
+                        MarginBorrowResponse margin_response;
+                        // These are common amongst all updates
+                        margin_response.msg_header = {sizeof(MarginBorrowResponse), MARGIN_BORROW_RESPONSE, 0};
+                        margin_response.internal_borrow_id = repay_request->internal_borrow_id;
+                        margin_response.strategy_id = repay_request->strategy_id;
+                        margin_response.exchange_id = repay_request->exchange_id;
+
+                        if(exchange_json_message["coin"].error() != simdjson::NO_SUCH_FIELD) {
+                            // got a successful response from exchange
+                            margin_response.sum_borrowed = ascii_to_double(exchange_json_message["amount"].get_c_str());
+                            margin_response.external_borrow_id = ascii_to_double(exchange_json_message["borrowId"].get_c_str());
+                        } else {
+                            // somehow a bad response from exchange - go back with 0 amount and 0 borrowid
+                            margin_response.sum_borrowed = (double) 0.0;
+                            margin_response.external_borrow_id = 0;
+                        }
+                        send_margin_borrow_response(&margin_response);
+                    }
+                }
+                    break;
+
                 case MARGIN_INFO_REQUEST: {
                     MarginInfoRequest *info_request = (MarginInfoRequest *) m;
                     MarginInfoResponse margin_response;
