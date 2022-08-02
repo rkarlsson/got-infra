@@ -117,7 +117,8 @@ class FileNameManager:
 ############################################################################
 def removeLocalFile(fileName):
     logging.info("Removing local file: " +fileName)
-    os.remove(fileName)
+    if(os.path.isfile((fileName))):
+        os.remove(fileName)
 
 
 ############################################################################
