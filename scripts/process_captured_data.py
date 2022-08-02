@@ -46,39 +46,38 @@ class FileNameManager:
         json_files = glob.glob(self.path)
         for json_file in json_files:
             # All files that are older than today and that ends with _all.txt are used to filter with
+            filename = json_file.split("/")[-1]
+            file_instrument_id = str(filename.split("_")[-2:-1][0])
+            self.symbol_details = self.symbol_map[file_instrument_id]
+            file_date = filename.split("_")[0]
+            file_symbol_name = "_".join(filename.split("_")[1:-2])
+            file_dirname = os.path.dirname(json_file)
+            snapshot_filename = file_dirname + "/" + file_date + "_" + file_symbol_name + "_" + file_instrument_id + "_ss.txt"
+            output_bin_filename = file_dirname + "/" + file_date + "_" + file_symbol_name + "_" + file_instrument_id + ".bin"
+
             if(json_file.endswith("_all.txt") and self.date not in json_file):
-                filename = json_file.split("/")[-1]
-                file_instrument_id = str(filename.split("_")[-2:-1][0])
-                self.symbol_details = self.symbol_map[file_instrument_id]
-                file_date = filename.split("_")[0]
-                file_symbol_name = filename.split("_")[1:-2][0]
-                file_dirname = os.path.dirname(json_file)
-                snapshot_filename = file_dirname + "/" + file_date + "_" + file_symbol_name + "_" + file_instrument_id + "_ss.txt"
-                output_bin_filename = file_dirname + "/" + file_date + "_" + file_symbol_name + "_" + file_instrument_id + ".bin"
+                if(os.path.isfile(snapshot_filename)) and (self.get_file_size(json_file) > 0) and (self.get_file_size(snapshot_filename) > 0):
+                    # we need to add this to the good_pairs list
+                    bin_upload_path = "binary/capture/" + self.symbol_details.exchange_name + "/" + file_date + "/"
+                    json_upload_path = "capture/" + self.symbol_details.exchange_name + "/" + file_date + "/"
+                    new_entry = {   
+                                    "json_file_all":json_file, 
+                                    "json_file_ss":snapshot_filename, 
+                                    "output_filename":output_bin_filename,
+                                    "bin_upload_path":bin_upload_path,
+                                    "json_upload_path":json_upload_path,
+                                    "instrument_id":file_instrument_id
+                                }
+                    self.good_pairs.append(new_entry)
 
-                if(os.path.isfile(snapshot_filename)):
-                    if(self.get_file_size(json_file) > 0) and (self.get_file_size(snapshot_filename) > 0):
-                        # we need to add this to the good_pairs list
-                        bin_upload_path = "binary/capture/" + self.symbol_details.exchange_name + "/" + file_date + "/"
-                        json_upload_path = "capture/" + self.symbol_details.exchange_name + "/" + file_date + "/"
-                        new_entry = {   
-                                        "json_file_all":json_file, 
-                                        "json_file_ss":snapshot_filename, 
-                                        "output_filename":output_bin_filename,
-                                        "bin_upload_path":bin_upload_path,
-                                        "json_upload_path":json_upload_path,
-                                        "instrument_id":file_instrument_id
-                                    }
-                        self.good_pairs.append(new_entry)
-
-                    else:
-                        # we need to add this to the bad_pairs list
-                        filename = json_file.split("/")[-1]
-                        snapshot_filename = file_dirname + "/" + filename.split("_")[:1][0] + "_ss.txt"
-                        new_entry = {   "json_file_all":json_file, 
-                                        "json_file_ss":snapshot_filename
-                                    }
-                        self.bad_pairs.append(new_entry)
+                else:
+                    # we need to add this to the bad_pairs list
+                    filename = json_file.split("/")[-1]
+                    snapshot_filename = file_dirname + "/" + filename.split("_")[:1][0] + "_ss.txt"
+                    new_entry = {   "json_file_all":json_file, 
+                                    "json_file_ss":snapshot_filename
+                                }
+                    self.bad_pairs.append(new_entry)
 
     def generate_binary_from_json(self, json_file, snapshot_filename, output_bin_filename, file_instrument_id):
         symbol_details = self.symbol_map[file_instrument_id]
