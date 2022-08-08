@@ -8,6 +8,7 @@ target_link_libraries(wsock2 filewriter)
 # target_compile_options(wsock2 -g)
 add_library(wsock STATIC "" wsock.cpp)
 target_link_libraries(wsock filewriter mergedorderbook)
+add_library(wsock_ftx STATIC "" wsock_ftx.cpp)
 
 # SVC_MD_BINANCE - covers all binance right now use the new websocket library
 ###################################################
@@ -20,13 +21,33 @@ target_link_libraries(svc_md_binance
     filewriter 
     binfile 
     logger 
-    wsock 
+    wsock
     gzlib 
     mysqlclient 
     wolfssl
     ${EXTERNAL_LIBRARIES}
 )
 # target_compile_options(svc_md_binance PUBLIC -g)
+
+
+
+# SVC_MD_BINANCE - covers all binance right now use the new websocket library
+###################################################
+add_executable(test_ftx test_ftx.cpp )
+target_link_libraries(test_ftx
+    refdb 
+    aeron_library 
+    simdjson 
+    filewriter 
+    binfile 
+    logger 
+    wsock_ftx
+    gzlib 
+    mysqlclient 
+    wolfssl
+    ${EXTERNAL_LIBRARIES}
+)
+
 
 # SVC_MD_KRAKEN - covers all kraken right now use the new websocket library
 ###################################################
