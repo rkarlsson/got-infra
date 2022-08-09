@@ -77,40 +77,40 @@ int WSock::get_new_socket(struct sockaddr* sock_addr, fd_info *socket_info) {
     /* Create a socket that uses an internet IPv4 address,
      * Sets the socket to be stream based (TCP),
      * 0 means choose the default protocol. */
-/////    if ((return_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-/////        subscription_logger->msg(ERROR, "Failed to create the socket");
+    if ((return_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+        subscription_logger->msg(ERROR, "Failed to create the socket");
 
     socket_info->fd = return_socket;
 
-/////    if (setsockopt(return_socket, IPPROTO_TCP, TCP_NODELAY, &on, len) < 0)
-/////        subscription_logger->msg(ERROR, "Failed to set setsockopt TCP_NODELAY");
+    if (setsockopt(return_socket, IPPROTO_TCP, TCP_NODELAY, &on, len) < 0)
+        subscription_logger->msg(ERROR, "Failed to set setsockopt TCP_NODELAY");
 
     /* Connect to the server */
-/////    if (connect(return_socket, (struct sockaddr*) sock_addr, sizeof(struct sockaddr)) == -1) {
-/////        subscription_logger->msg(ERROR, "Failed to connect to the socket");
-/////    }
+    if (connect(return_socket, (struct sockaddr*) sock_addr, sizeof(struct sockaddr)) == -1) {
+        subscription_logger->msg(ERROR, "Failed to connect to the socket");
+    }
 
     /* Create a WOLFSSL object */
-/////    if ((ssl = wolfSSL_new(ctx)) == NULL) {
-/////        subscription_logger->msg(ERROR, "Failed to create WOLFSSL object");
-/////    }
+    if ((ssl = wolfSSL_new(ctx)) == NULL) {
+        subscription_logger->msg(ERROR, "Failed to create WOLFSSL object");
+    }
 
     socket_info->ssl_ptr = ssl;
 
     /* Attach wolfSSL to the socket */
-/////    if (wolfSSL_set_fd(ssl, return_socket) != WOLFSSL_SUCCESS) {
-/////        subscription_logger->msg(ERROR, "Failed to set the WOLFSSL socket filedescriptor");
-/////    }
+    if (wolfSSL_set_fd(ssl, return_socket) != WOLFSSL_SUCCESS) {
+        subscription_logger->msg(ERROR, "Failed to set the WOLFSSL socket filedescriptor");
+    }
 
     /* Connect to wolfSSL on the server side */
     if ((ret = wolfSSL_connect(ssl)) != WOLFSSL_SUCCESS) {
-/////        subscription_logger->msg(ERROR, "Failed to setup the TLS handshake with remote host");
+        subscription_logger->msg(ERROR, "Failed to setup the TLS handshake with remote host");
         char buff[256];
         int err = wolfSSL_get_error(ssl, ret);
         wolfSSL_ERR_error_string(err, buff);
         std::stringstream errortext;
         errortext << "TLS connection: " << buff << " (" << std::to_string(err) << ")" << std::endl;
-/////        subscription_logger->msg(ERROR, errortext.str());
+        subscription_logger->msg(ERROR, errortext.str());
     }
 
     socket_info->fragment_buffer = (char *) malloc(FRAGMENT_BUFFER_SIZE);
@@ -186,7 +186,8 @@ bool WSock::modify_event_on_socket(struct fd_info *struct_ptr, int new_event) {
 // Sends upgrade and subscribes
 // -----------------------------------------------------------------------
 bool WSock::subscribe(std::string connection_string, fd_info *socket_info, std::string websocket_hostname_string) {
-    std::string send_string = "GET " + connection_string + " HTTP/1.1\n";
+    printf("Hsfksdgksdgk\n");
+    std::string send_string = "GET " + connection_string + " HTTP/1.1";
     send_string += "Host: " + websocket_hostname_string + "\n";
     send_string += "Connection: Upgrade\n";
     send_string += "Pragma: no-cache\n";
@@ -195,8 +196,11 @@ bool WSock::subscribe(std::string connection_string, fd_info *socket_info, std::
     send_string += "Sec-WebSocket-Version: 13\n";
     send_string += "Sec-WebSocket-Key: q4xkcO32u266gldTuKaSOw==\n\n";
 
+    printf("cs = %s %s\n", connection_string.c_str(), send_string.c_str());
+
     // auto write_length = write_ssl((char *) send_string.c_str(), send_string.length(), socket_info);
     write_ssl((char *) send_string.c_str(), send_string.length(), socket_info);
+    current_fd_info = socket_info;
     char readbuffer[1024];
 
     int read_length = 0;
@@ -307,6 +311,7 @@ struct fd_info* WSock::connect_to_websocket(std::string websocket_URI) {
 // This processes all subscription requests
 // -----------------------------------------------------------------------
 void WSock::process_subscription_requests() {
+    printf("do this\n");
     std::thread subscription_thread([this]() {
         std::vector<struct fd_info*> fds_to_remove;
 
@@ -356,6 +361,7 @@ void WSock::process_subscription_requests() {
             struct subscription_info *sub_info;
             if (subscription_ring.GetPopPtr(&sub_info)) {
                 // Process the subscription request
+                printf("subscribe\n");
 
                 subscription_logger->msg(INFO, "Subscribing to: " + sub_info->websocket_URI);
                 auto fd_info = connect_to_websocket(sub_info->websocket_URI);
@@ -372,11 +378,13 @@ void WSock::process_subscription_requests() {
 // Writes to the encrypted connection
 // -----------------------------------------------------------------------
 int WSock::write_ssl(char *stuff_to_write, int length_of_data_to_write, fd_info *socket_info) {
+    printf("socket info = %d\n", socket_info);
     WOLFSSL *ssl = socket_info->ssl_ptr;
     int length_written = 0;
     length_written = wolfSSL_write(ssl, stuff_to_write, length_of_data_to_write);
     if (length_written != length_of_data_to_write) {
-        ///// logger->msg(ERROR, "Failed to write entire message to ssl channel on: " + std::string(socket_info->connection_string));
+        int tmp = wolfSSL_get_error(ssl, length_written);
+        logger->msg(ERROR, "Failed to write entire message to ssl channel on: " + std::string(socket_info->connection_string));
     }
     return(length_written);
 }
@@ -489,6 +497,12 @@ bool WSock::send_pong(char *msg_ptr, int msg_len) {
     write_ssl(msg_ptr, msg_len, current_fd_info);
     return(true);
 }
+
+bool WSock::send_data(char *msg_ptr, int msg_len) {
+    write_ssl(msg_ptr, msg_len, current_fd_info);
+    return(true);
+}
+
 
 // -----------------------------------------------------------------------
 // Sends unsolicited pongs to a socket in order to keep them alive
@@ -614,6 +628,7 @@ int WSock::ws_read() {
 // Takes a websocket URI as input and adds to subscriptionrequest ring
 // -----------------------------------------------------------------------
 void WSock::add_subscription_request(std::string websocket_URI, fd_info *socket_info) {
+    printf("added\n");
     // I use this one so it is shared between all sockets that belong to a single symbol ID
     // Useful when looking up ToB value for a Trade so I can distinguish the side value of the trade
     // Trades are published on a separate socket and would otherwise have to be looped up every time in a map, very slow and resource intense
@@ -623,6 +638,14 @@ void WSock::add_subscription_request(std::string websocket_URI, fd_info *socket_
     new_request.websocket_URI = websocket_URI;
     new_request.socket_info = socket_info;
     while(!subscription_ring.tryEnqueue(std::move(new_request)));
+}
+
+std::string_view WSock::get_next_message_from_websocket() {
+    if (message_pointer == num_messages){
+        ws_read();
+        message_pointer = 0; // reset pointer to array
+    }
+    return(ws_messages[message_pointer++]);
 }
 
 

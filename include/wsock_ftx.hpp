@@ -115,6 +115,7 @@ class WSock {
         WSock(Logger *_logger, Logger *_subscription_logger, int refresh_time, int subscription_delay);
         ~WSock();
 
+        bool send_data(char *msg_ptr, int msg_len);
         void add_subscription_request(std::string websocket_URI, fd_info *socket_info = NULL);
         std::string_view get_next_message_from_websocket();
         uint64_t get_message_receive_time();
