@@ -112,7 +112,32 @@ fragment_handler_t Monitor::process_io_messages() {
                         .addTag("instr_id", std::to_string(static_cast<uint32_t>(s->instrument_id))));
                     }
                 }
-                break;                
+                break;   
+
+                case SIGNAL_BLOCK: {
+                    struct SignalBlock *sb = (struct SignalBlock*)m;
+                    if(output_type == STDOUT_OUTPUT_TYPE){
+                        std::cout << "SignalBlock found:" << std::endl;
+                        std::cout << "  RcvTime= " << std::to_string(static_cast<uint64_t>(sb->receive_timestamp)) << std::endl;
+                        std::cout << "  ExcTime= " << std::to_string(static_cast<uint64_t>(sb->exchange_timestamp)) << std::endl;
+                        std::cout << "  NumItems= " << std::to_string(static_cast<uint32_t>(sb->num_of_signal_update_items)) << std::endl;
+                        std::cout << "  Type= " << SignalTypeString(sb->signal_block_data_type) << std::endl;
+                        std::cout << "  Instrument ID= " << std::to_string(static_cast<uint32_t>(sb->instrument_id)) << std::endl;
+                    }
+
+                    if(output_type == FILE_OUTPUT_TYPE){
+                        bin_file_md->write_message((char *)sb, (uint32_t) sb->msg_header.msgLength);
+                    }
+
+                    // if(output_type == INFLUX_OUTPUT_TYPE){
+                    //     influxDBio->write(influxdb::Point{"signal"}
+                    //     .addField("value", static_cast<double>(s->value))
+                    //     .addTag("type", std::to_string(static_cast<int>(s->type)))
+                    //     .addTag("exch_id", std::to_string(static_cast<uint8_t>(s->exchange_id)))
+                    //     .addTag("instr_id", std::to_string(static_cast<uint32_t>(s->instrument_id))));
+                    // }
+                }
+                break;   
 
                 case  MSG_PARENT_ORDER: {
                     struct SendParentOrder *s = (struct SendParentOrder*)m;
@@ -416,32 +441,6 @@ fragment_handler_t Monitor::process_io_messages() {
                     }
                 }
                 break;
-
-                // case ROLL_OVER_REQUEST: {
-                //     struct RolloverRequest *r = (struct RolloverRequest*)m;
-                //     if(output_type == STDOUT_OUTPUT_TYPE){
-                //         std::cout << "Rollover Request found:" << std::endl;
-                //         std::cout << "  Request_Timestamp= " << std::to_string(static_cast<long long int>(r->request_time_stamp)) << std::endl;
-                //     }
-
-                //     if(output_type == FILE_OUTPUT_TYPE){
-                //         bin_file_risk->write_message((char *)r, (uint32_t) r->msg_header.msgLength);
-                //     }
-                // }
-                // break;
-
-                // case ROLL_OVER_RESPONSE: {
-                //     struct RolloverResponse *r = (struct RolloverResponse*)m;
-                //     if(output_type == STDOUT_OUTPUT_TYPE){
-                //         std::cout << "Rollover Response found:" << std::endl;
-                //         std::cout << "  Response_Timestamp= " << std::to_string(static_cast<long long int>(r->response_time_stamp)) << std::endl;
-                //     }
-
-                //     if(output_type == FILE_OUTPUT_TYPE){
-                //         bin_file_risk->write_message((char *)r, (uint32_t) r->msg_header.msgLength);
-                //     }
-                // }
-                // break;
 
                 case ACCOUNT_INFO_UPDATE: {
                     struct AccountInfoResponse *a = (struct AccountInfoResponse *)m;
